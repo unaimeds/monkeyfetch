@@ -1,10 +1,11 @@
 mod errors;
 mod config;
+mod models;
+mod api;
 
 use clap::Parser;
-use reqwest::header::AUTHORIZATION;
 
-use crate::config::Config;
+use crate::{api::Api, config::Config};
 
 #[derive(Debug, Parser)]
 #[command(version)]
@@ -18,15 +19,8 @@ fn main() {
     // TODO: use custom config path if provided
     let _args = Args::parse();
     let cfg = Config::from_file("config.toml").unwrap();
+    let api = Api::new(&cfg.api_key);
 
-    // TODO: create a wrapper for monkeytype API
-    let http = reqwest::blocking::Client::new();
-    let res = http
-        .get("https://api.monkeytype.com/users/stats")
-        .header(AUTHORIZATION, format!("ApeKey {}", cfg.api_key))
-        .send()
-        .unwrap();
-    let body = res.text().unwrap();
-
-    println!("{body}");
+    let stats = api.user_stats().unwrap();
+    println!("{stats:#?}");
 }

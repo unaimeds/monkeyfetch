@@ -8,6 +8,10 @@ pub type AppResult<T> = Result<T, AppError>;
 pub enum AppError {
     #[error(transparent)]
     Io(#[from] io::Error),
+
     #[error(transparent)]
-    ConfigParse(#[from] toml::de::Error),
+    Toml(#[from] toml::de::Error),
+
+    #[error(transparent)]
+    Http(#[from] reqwest::Error),
 }
