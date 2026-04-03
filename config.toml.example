@@ -1,2 +1,6 @@
-# You can get the API key at https://monkeytype.com/account-settings?tab=apeKeys
+# Monkeytype API URL to which all requests will be sent.
+# !! You generally shouldn't change this.
+api_url = "https://api.monkeytype.com"
+
+# You can get the API key at https://monkeytype.com/account-settings?tab=apeKeys.
 api_key = "xyz"
