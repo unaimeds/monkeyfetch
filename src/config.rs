@@ -2,7 +2,7 @@ use std::{fs::File, io::Read};
 
 use serde::Deserialize;
 
-use crate::error::AppResult;
+use crate::error::{AppError, AppResult};
 
 /// Contains all config options that can be set in the file.
 #[derive(Debug, Deserialize)]
@@ -14,9 +14,9 @@ pub struct Config {
 
 impl Config {
     /// Tries to parse toml file for given path into new Config instance.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `path` - A path to the config file.
     pub fn from_file(path: &str) -> AppResult<Self> {
         let mut file = File::open(path)?;
@@ -29,9 +29,9 @@ impl Config {
 
     /// Checks if all necessary config fields were set.
     /// Returns user-friendly error message otherwise.
-    pub fn validate(&self) -> Result<(), String> {
+    pub fn validate(&self) -> AppResult<()> {
         if self.api_key.trim().is_empty() {
-            return Err("api_key must not be empty".into())
+            return Err(AppError::ApiKeyMissing);
         }
         Ok(())
     }
