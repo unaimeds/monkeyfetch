@@ -13,7 +13,6 @@ use crate::{
     api::Api,
     cache::{Cache, CacheManager},
     config::Config,
-    dto::{PersonalBests, TestResult, UserStats},
     error::AppResult,
     print::print_user_data,
 };
@@ -24,14 +23,6 @@ struct Args {
     /// Path to configuration file. Defaults to `config.toml` if not explicitly set.
     #[arg(long, default_value = "config.toml")]
     config: String,
-}
-
-// All user related DTOs combined
-struct FullUserData {
-    username: String,
-    stats: UserStats,
-    personal_bests: PersonalBests,
-    test_results: Vec<TestResult>,
 }
 
 fn main() {
@@ -51,31 +42,29 @@ fn run() -> AppResult<()> {
     cfg.validate()?;
 
     let cache = CacheManager::new();
-    if let Some(data) = cache.load()? {
-        println!("{data:#?}");
-    }
+    let data = match cache.load()? {
+        Some(d) => {
+            println!("cache hit");
+            d
+        }
+        None => {
+            println!("cache miss");
+            let api = Api::new(&cfg.api_key);
+            let username = api.username()?;
+            let user_stats = api.user_stats()?;
+            let personal_bests = api.personal_bests()?;
+            let recent_tests = api.test_results()?;
+            cache.save(Cache {
+                timestamp: Utc::now(),
+                username,
+                user_stats,
+                personal_bests: personal_bests.0,
+                recent_tests,
+            })?
+        }
+    };
 
-    // let api = Api::new(&cfg.api_key);
-    // let username = api.username()?;
-    // let stats = api.user_stats()?;
-    // let personal_bests = api.personal_bests()?;
-    // let test_results = api.test_results()?;
-
-    // let c = Cache {
-    //     timestamp: Utc::now(),
-    //     username,
-    //     user_stats: stats,
-    //     personal_bests: personal_bests.0,
-    //     recent_tests: test_results,
-    // };
-    // cache.save(c)?;
-
-    // print_user_data(FullUserData {
-    //     username,
-    //     stats,
-    //     personal_bests,
-    //     test_results,
-    // });
+    print_user_data(data);
 
     Ok(())
 }

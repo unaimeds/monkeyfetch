@@ -1,16 +1,16 @@
 use colored::Colorize;
 
-use crate::FullUserData;
+use crate::cache::Cache;
 
-pub fn print_user_data(user: FullUserData) {
-    let total_secs = user.stats.time_typing as u32;
+pub fn print_user_data(cache: Cache) {
+    let total_secs = cache.user_stats.time_typing as u32;
     let hours = total_secs / 3600;
     let minutes = (total_secs % 3600) / 60;
     let seconds = total_secs % 60;
 
     println!(
         "{}{}{}",
-        user.username.blue().bold(),
+        cache.username.blue().bold(),
         "@".white().bold(),
         "monkeytype".blue().bold(),
     );
@@ -18,7 +18,7 @@ pub fn print_user_data(user: FullUserData) {
     println!(
         "{} {}",
         "Tests completed:".blue().bold(),
-        user.stats.completed_tests.to_string().white().bold(),
+        cache.user_stats.completed_tests.to_string().white().bold(),
     );
     println!(
         "{} {}",

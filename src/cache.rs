@@ -5,7 +5,7 @@ use std::{
     io::{self, Read, Write},
 };
 
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -64,10 +64,20 @@ impl CacheManager {
     }
 
     pub fn load(&self) -> AppResult<Option<Cache>> {
-        Cache::from_file(format!("{}/monkeyfetch.json", self.cache_dir))
+        let opt = Cache::from_file(format!("{}/monkeyfetch.json", self.cache_dir))?;
+        if let Some(data) = opt {
+            if Utc::now() - data.timestamp > Duration::minutes(15) {
+                Ok(None)
+            } else {
+                Ok(Some(data))
+            }
+        } else {
+            Ok(opt)
+        }
     }
 
-    pub fn save(&self, c: Cache) -> AppResult<()> {
-        c.to_file(format!("{}/monkeyfetch.json", self.cache_dir))
+    pub fn save(&self, c: Cache) -> AppResult<Cache> {
+        c.to_file(format!("{}/monkeyfetch.json", self.cache_dir))?;
+        Ok(c)
     }
 }
