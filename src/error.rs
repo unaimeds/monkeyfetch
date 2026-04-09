@@ -15,6 +15,9 @@ pub enum AppError {
     #[error(transparent)]
     Http(#[from] reqwest::Error),
 
+    #[error(transparent)]
+    Json(#[from] serde_json::Error),
+
     #[error("api_key in config must not be empty")]
     ApiKeyMissing,
 }

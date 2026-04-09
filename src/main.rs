@@ -1,14 +1,17 @@
 mod api;
+mod cache;
 mod config;
 mod dto;
 mod error;
 mod print;
 
+use chrono::Utc;
 use clap::Parser;
 use colored::Colorize;
 
 use crate::{
     api::Api,
+    cache::{Cache, CacheManager},
     config::Config,
     dto::{PersonalBests, TestResult, UserStats},
     error::AppResult,
@@ -47,19 +50,32 @@ fn run() -> AppResult<()> {
     let cfg = Config::from_file(&args.config)?;
     cfg.validate()?;
 
-    let api = Api::new(&cfg.api_key);
+    let cache = CacheManager::new();
+    if let Some(data) = cache.load()? {
+        println!("{data:#?}");
+    }
 
-    let username = api.username()?;
-    let stats = api.user_stats()?;
-    let personal_bests = api.personal_bests()?;
-    let test_results = api.test_results()?;
+    // let api = Api::new(&cfg.api_key);
+    // let username = api.username()?;
+    // let stats = api.user_stats()?;
+    // let personal_bests = api.personal_bests()?;
+    // let test_results = api.test_results()?;
 
-    print_user_data(FullUserData {
-        username,
-        stats,
-        personal_bests,
-        test_results,
-    });
+    // let c = Cache {
+    //     timestamp: Utc::now(),
+    //     username,
+    //     user_stats: stats,
+    //     personal_bests: personal_bests.0,
+    //     recent_tests: test_results,
+    // };
+    // cache.save(c)?;
+
+    // print_user_data(FullUserData {
+    //     username,
+    //     stats,
+    //     personal_bests,
+    //     test_results,
+    // });
 
     Ok(())
 }
