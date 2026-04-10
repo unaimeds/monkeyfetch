@@ -43,12 +43,8 @@ fn run() -> AppResult<()> {
 
     let cache = CacheManager::new();
     let data = match cache.load()? {
-        Some(d) => {
-            println!("cache hit");
-            d
-        }
+        Some(d) => d,
         None => {
-            println!("cache miss");
             let api = Api::new(&cfg.api_key);
             let username = api.username()?;
             let user_stats = api.user_stats()?;
