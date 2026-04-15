@@ -2,6 +2,7 @@
 
 use std::collections::HashMap;
 
+use chrono::{DateTime, Utc, serde::ts_milliseconds};
 use serde::{Deserialize, Deserializer, Serialize};
 
 #[derive(Deserialize)]
@@ -66,7 +67,8 @@ pub struct TestResult {
     pub consistency: f32,
     pub mode: String, // TODO: use an enum
     pub mode2: String,
-    pub timestamp: u64, // TODO: auto convert to chrono ts or smth
+    #[serde(with = "ts_milliseconds")]
+    pub timestamp: DateTime<Utc>,
 
     #[serde(alias = "uid")]
     pub user_id: String,
