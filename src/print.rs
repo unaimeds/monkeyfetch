@@ -8,6 +8,7 @@ use crate::{
 };
 
 // TODO: dynamic output size based on terminal's size
+// TODO: colored output
 
 const BANNER_SEPARATOR: &str = "·";
 const PB_COLUMNS: &[&str] = &["mode", "wpm", "raw", "acc", "cons"];
@@ -17,10 +18,15 @@ pub fn print_user_data(cache: Cache) {
     let (pb_lines, pb_len) = personal_bests(cache.personal_bests);
     let (rt_lines, rt_len) = recent_tests(&cache.recent_tests);
 
-    // TODO: round the width to nearest number dividable by 2
-    dbg!(b_len, pb_len, rt_len);
-    // let max_width = [b_len, pb_len, rt_len].into_iter().max().unwrap();
-    let max_width = 50;
+    let max_width = [b_len, pb_len, rt_len].into_iter().max().unwrap();
+    // must be divisible by PB_COLUMNS.len() (for column borders) and by 2 (for banner centering)
+    let col_count = PB_COLUMNS.len();
+    let round_to = if col_count % 2 == 0 {
+        col_count
+    } else {
+        col_count * 2
+    };
+    let max_width = ((max_width + round_to - 1) / round_to) * round_to;
 
     print_banner(&b_text, max_width);
     println!("");
@@ -63,15 +69,13 @@ fn personal_bests(bests: HashMap<String, PersonalBest>) -> (Vec<Vec<String>>, us
     let mut max_width = header_line.chars().count();
 
     // TODO: order by mode (15s -> 120s)
-    // TODO: add colored output
-    // TODO: always show 2 decimal digits in acc & cons
     for (mode, best) in bests {
         let columns = vec![
             format!("{mode}s"),
             format!("{}", best.wpm.round()),
             format!("{}", best.raw.round()),
-            format!("{}%", best.accuracy),
-            format!("{}%", best.consistency),
+            format!("{:.2}%", best.accuracy),
+            format!("{:.2}%", best.consistency),
         ];
 
         let min_line = format!(" {} ", columns.join(" │ "));
@@ -141,15 +145,35 @@ fn print_personal_bests(lines: &[Vec<String>], width: usize) {
     // bottom header border
     // same reason for additional horizontal border at end as in top border
     print_cond_border(width, header_width, "├", "─┤", "─", "┼");
+
+    // data rows
+    for row in lines {
+        print!("│");
+        for (i, cell) in row.iter().enumerate() {
+            let with_sep = i < PB_COLUMNS.len() - 1;
+
+            let padding = header_width.saturating_sub(cell.chars().count());
+            let left_pad = padding / 2;
+            let right_pad = padding - left_pad - if with_sep { 1 } else { 0 };
+
+            print!(
+                "{:left_pad$}{cell}{:right_pad$}{}",
+                "",
+                "",
+                if with_sep { "│" } else { "" }
+            );
+        }
+        println!("│");
+    }
+
+    // bottom border
+    print_cond_border(width, header_width, "└", "─┘", "─", "┴");
 }
 
-// TODO: add colored output
 fn recent_tests(tests: &[TestResult]) -> (Vec<(String, String)>, usize) {
     let mut lines = Vec::new();
     let mut max_width = 0;
 
-    // println!("recent tests");
-    println!("────────────────────────────────────────────────────────");
     for test in tests {
         let left = format!(
             "▸ {} wpm  raw {}  {}%  {}/{}",
