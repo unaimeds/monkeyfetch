@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use chrono_humanize::HumanTime;
+use colored::Colorize;
 
 use crate::{
     cache::Cache,
@@ -8,10 +9,13 @@ use crate::{
 };
 
 // TODO: dynamic output size based on terminal's size
-// TODO: colored output
 
 const BANNER_SEPARATOR: &str = "·";
 const PB_COLUMNS: &[&str] = &["mode", "wpm", "raw", "acc", "cons"];
+
+// Monkeytype palette
+const SUB: (u8, u8, u8) = (100, 102, 105); // #646669
+const ACCENT: (u8, u8, u8) = (226, 183, 20); // #e2b714
 
 pub fn print_user_data(cache: Cache) {
     let (b_text, b_len) = banner(&cache.username, cache.user_stats);
@@ -51,15 +55,30 @@ fn banner(username: &str, stats: UserStats) -> (String, usize) {
 }
 
 fn print_banner(inner: &str, width: usize) {
+    let (sr, sg, sb) = SUB;
+    let (ar, ag, ab) = ACCENT;
+
     let inner_width = width - 4; // padding of 2 whitespaces on each side
     let padding = inner_width - inner.chars().count();
-
     let left_pad = padding / 2;
     let right_pad = padding - left_pad;
 
-    println!("╔{}╗", "═".repeat(width));
-    println!("║  {:left_pad$}{inner}{:right_pad$}  ║", "", "");
-    println!("╚{}╝", "═".repeat(width));
+    println!(
+        "{}",
+        format!("╔{}╗", "═".repeat(width)).truecolor(sr, sg, sb)
+    );
+    println!(
+        "{}  {:left_pad$}{}{:right_pad$}  {}",
+        "║".truecolor(sr, sg, sb),
+        "",
+        inner.truecolor(ar, ag, ab).bold(),
+        "",
+        "║".truecolor(sr, sg, sb),
+    );
+    println!(
+        "{}",
+        format!("╚{}╝", "═".repeat(width)).truecolor(sr, sg, sb)
+    );
 }
 
 fn personal_bests(bests: HashMap<String, PersonalBest>) -> (Vec<Vec<String>>, usize) {
@@ -68,8 +87,10 @@ fn personal_bests(bests: HashMap<String, PersonalBest>) -> (Vec<Vec<String>>, us
     let header_line = format!(" {} ", PB_COLUMNS.join(" │ "));
     let mut max_width = header_line.chars().count();
 
-    // TODO: order by mode (15s -> 120s)
-    for (mode, best) in bests {
+    let mut entries: Vec<(String, PersonalBest)> = bests.into_iter().collect();
+    entries.sort_by_key(|(k, _)| k.parse::<u32>().unwrap_or(u32::MAX));
+
+    for (mode, best) in entries {
         let columns = vec![
             format!("{mode}s"),
             format!("{}", best.wpm.round()),
@@ -90,65 +111,71 @@ fn personal_bests(bests: HashMap<String, PersonalBest>) -> (Vec<Vec<String>>, us
     (lines, max_width)
 }
 
-fn print_cond_border(
+fn make_border(
     width: usize,
     header_width: usize,
     start: &str,
     end: &str,
     normal: &str,
     on_cond: &str,
-) {
-    print!("{start}");
+) -> String {
+    let mut s = String::from(start);
     let mut count = 1;
     for _ in 1..width {
         if count == header_width {
-            print!("{on_cond}");
+            s.push_str(on_cond);
             count = 1;
         } else {
-            print!("{normal}");
+            s.push_str(normal);
             count += 1;
         }
     }
-    println!("{end}");
+    s.push_str(end);
+    s
 }
 
 fn print_personal_bests(lines: &[Vec<String>], width: usize) {
-    println!("personal bests");
+    let (sr, sg, sb) = SUB;
+    let (ar, ag, ab) = ACCENT;
 
-    // calculate how many chars we have for each header
+    println!("{}", "personal bests".truecolor(ar, ag, ab).bold());
+
     let header_width = width / PB_COLUMNS.len();
 
-    // top border
-    // we print additional horizontal border because last header
-    // has one more padding on right due to not having vertical border
-    print_cond_border(width, header_width, "┌", "─┐", "─", "┬");
+    println!(
+        "{}",
+        make_border(width, header_width, "┌", "─┐", "─", "┬").truecolor(sr, sg, sb)
+    );
 
-    // headers
-    print!("│");
+    print!("{}", "│".truecolor(sr, sg, sb));
     for (i, col) in PB_COLUMNS.iter().enumerate() {
         let with_sep = i < PB_COLUMNS.len() - 1;
 
         let padding = header_width - col.chars().count();
         let left_pad = padding / 2;
-        // -1 because we add a separator at the end of header
         let right_pad = padding - left_pad - if with_sep { 1 } else { 0 };
 
         print!(
-            "{:left_pad$}{col}{:right_pad$}{}",
+            "{:left_pad$}{}{:right_pad$}{}",
             "",
+            col.truecolor(ar, ag, ab).bold(),
             "",
-            if with_sep { "│" } else { "" }
+            if with_sep {
+                "│".truecolor(sr, sg, sb).to_string()
+            } else {
+                String::new()
+            }
         );
     }
-    println!("│");
+    println!("{}", "│".truecolor(sr, sg, sb));
 
-    // bottom header border
-    // same reason for additional horizontal border at end as in top border
-    print_cond_border(width, header_width, "├", "─┤", "─", "┼");
+    println!(
+        "{}",
+        make_border(width, header_width, "├", "─┤", "─", "┼").truecolor(sr, sg, sb)
+    );
 
-    // data rows
     for row in lines {
-        print!("│");
+        print!("{}", "│".truecolor(sr, sg, sb));
         for (i, cell) in row.iter().enumerate() {
             let with_sep = i < PB_COLUMNS.len() - 1;
 
@@ -156,18 +183,31 @@ fn print_personal_bests(lines: &[Vec<String>], width: usize) {
             let left_pad = padding / 2;
             let right_pad = padding - left_pad - if with_sep { 1 } else { 0 };
 
+            let colored_cell = if i == 1 {
+                cell.truecolor(ar, ag, ab).to_string()
+            } else {
+                cell.normal().to_string()
+            };
+
             print!(
-                "{:left_pad$}{cell}{:right_pad$}{}",
+                "{:left_pad$}{}{:right_pad$}{}",
                 "",
+                colored_cell,
                 "",
-                if with_sep { "│" } else { "" }
+                if with_sep {
+                    "│".truecolor(sr, sg, sb).to_string()
+                } else {
+                    String::new()
+                }
             );
         }
-        println!("│");
+        println!("{}", "│".truecolor(sr, sg, sb));
     }
 
-    // bottom border
-    print_cond_border(width, header_width, "└", "─┘", "─", "┴");
+    println!(
+        "{}",
+        make_border(width, header_width, "└", "─┘", "─", "┴").truecolor(sr, sg, sb)
+    );
 }
 
 fn recent_tests(tests: &[TestResult]) -> (Vec<(String, String)>, usize) {
@@ -200,10 +240,13 @@ fn recent_tests(tests: &[TestResult]) -> (Vec<(String, String)>, usize) {
 }
 
 fn print_recent_tests(tests: &[(String, String)], width: usize) {
+    let (sr, sg, sb) = SUB;
+    let (ar, ag, ab) = ACCENT;
+
     let w = width + 2;
 
-    println!("recent tests");
-    println!("{}", "─".repeat(w));
+    println!("{}", "recent tests".truecolor(ar, ag, ab).bold());
+    println!("{}", "─".repeat(w).truecolor(sr, sg, sb));
 
     let max_right_width = tests
         .iter()
@@ -214,6 +257,6 @@ fn print_recent_tests(tests: &[(String, String)], width: usize) {
 
     for (left, right) in tests {
         let right_pad = w - left.chars().count() - max_right_width;
-        println!("{left}{:right_pad$}{right}", "");
+        println!("{}{:right_pad$}{}", left, "", right.truecolor(sr, sg, sb));
     }
 }

@@ -20,25 +20,27 @@ use crate::{
 #[derive(Debug, Parser)]
 #[command(version)]
 struct Args {
-    /// Path to configuration file. Defaults to `config.toml` if not explicitly set.
-    #[arg(long, default_value = "config.toml")]
-    config: String,
+    /// Path to configuration file. Defaults to {CONFIG_DIR}/monkeyfetch/config.toml,
+    /// where {CONFIG_DIR} is the default user's config directory based on OS.
+    /// For example, in Linux that would be: ~/.config/monkeyfetch/config.toml
+    #[arg(long)]
+    config: Option<String>,
 }
 
 fn main() {
     if let Err(why) = run() {
-        eprintln!(
-            "{} {}",
-            "==>".red().bold(),
-            "Something went wrong:".white().bold(),
-        );
-        eprintln!(" - {why}");
+        eprintln!("{}", "Something went wrong!".white().bold());
+        eprintln!("{}", why.to_string().red());
     }
 }
 
 fn run() -> AppResult<()> {
     let args = Args::parse();
-    let cfg = Config::from_file(&args.config)?;
+    let config_path = match args.config {
+        Some(ref p) => std::path::PathBuf::from(p),
+        None => Config::default_path()?,
+    };
+    let cfg = Config::from_file(&config_path)?;
     cfg.validate()?;
 
     let cache = CacheManager::new();

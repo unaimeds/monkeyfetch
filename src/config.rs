@@ -1,10 +1,13 @@
-use std::{fs::File, io::Read};
+use std::{
+    fs::File,
+    io::Read,
+    path::{Path, PathBuf},
+};
 
 use serde::Deserialize;
 
 use crate::error::{AppError, AppResult};
 
-/// Contains all config options that can be set in the file.
 #[derive(Debug, Deserialize)]
 #[serde(default)]
 pub struct Config {
@@ -13,13 +16,8 @@ pub struct Config {
 }
 
 impl Config {
-    /// Tries to parse toml file for given path into new Config instance.
-    ///
-    /// # Arguments
-    ///
-    /// * `path` - A path to the config file.
-    pub fn from_file(path: &str) -> AppResult<Self> {
-        let mut file = File::open(path)?;
+    pub fn from_file(path: &Path) -> AppResult<Self> {
+        let mut file = File::open(path).map_err(|_| AppError::ConfigMissing)?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
 
@@ -27,8 +25,13 @@ impl Config {
         Ok(config)
     }
 
-    /// Checks if all necessary config fields were set.
-    /// Returns user-friendly error message otherwise.
+    pub fn default_path() -> AppResult<PathBuf> {
+        let mut path = dirs::config_dir().ok_or(AppError::NoConfigDir)?;
+        path.push("monkeyfetch");
+        path.push("config.toml");
+        Ok(path)
+    }
+
     pub fn validate(&self) -> AppResult<()> {
         if self.api_key.trim().is_empty() {
             return Err(AppError::ApiKeyMissing);

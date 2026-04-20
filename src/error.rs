@@ -20,4 +20,10 @@ pub enum AppError {
 
     #[error("api_key in config must not be empty")]
     ApiKeyMissing,
+
+    #[error("could not determine config directory for this platform")]
+    NoConfigDir,
+
+    #[error("could not read config file, is it missing?")]
+    ConfigMissing,
 }
