@@ -2,7 +2,8 @@ use reqwest::header::AUTHORIZATION;
 use serde::de::DeserializeOwned;
 
 use crate::{
-    dto::{ApiResponse, PersonalBests, TestResult, UserProfile, UserStats}, error::AppResult
+    dto::{ApiResponse, PersonalBests, TestResult, UserProfile, UserStats},
+    error::AppResult,
 };
 
 const API_URL: &str = "https://api.monkeytype.com";
@@ -15,9 +16,9 @@ pub struct Api {
 
 impl Api {
     /// Returns a new API wrapper instance for given token.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `token` - A user-generated ApeKey used to authorize HTTP requests.
     pub fn new(token: &str) -> Self {
         Self {
@@ -38,7 +39,7 @@ impl Api {
 
     /// Fetches current user's test results.
     pub fn test_results(&self) -> AppResult<Vec<TestResult>> {
-        self.get("/results", &[("limit", "2")])
+        self.get("/results", &[("limit", "5")])
     }
 
     /// Fetches current user's username.
@@ -55,10 +56,10 @@ impl Api {
     }
 
     /// Sends a GET request to API's endpoint with given query.
-    /// 
+    ///
     /// # Arguments
-    /// 
-    /// * `endpoint` - The endpoint to which the request should be sent. Must start with '/'. 
+    ///
+    /// * `endpoint` - The endpoint to which the request should be sent. Must start with '/'.
     /// * `query` - A slice containing query parameters to be sent with request. Can be empty.
     fn get<T>(&self, endpoint: &str, query: &[(&str, &str)]) -> AppResult<T>
     where
