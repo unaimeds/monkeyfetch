@@ -25,17 +25,17 @@ pub fn print_user_data(cache: Cache) {
     let max_width = [b_len, pb_len, rt_len].into_iter().max().unwrap();
     // must be divisible by PB_COLUMNS.len() (for column borders) and by 2 (for banner centering)
     let col_count = PB_COLUMNS.len();
-    let round_to = if col_count % 2 == 0 {
+    let round_to = if col_count.is_multiple_of(2) {
         col_count
     } else {
         col_count * 2
     };
-    let max_width = ((max_width + round_to - 1) / round_to) * round_to;
+    let max_width = max_width.div_ceil(round_to);
 
     print_banner(&b_text, max_width);
-    println!("");
+    println!();
     print_personal_bests(&pb_lines, max_width);
-    println!("");
+    println!();
     print_recent_tests(&rt_lines, max_width);
 }
 
