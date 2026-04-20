@@ -10,7 +10,9 @@ _Requires terminal with true color support._
 
 ## Installation
 
-Requires [Rust](https://rustup.rs).
+**Pre-compiled binary** (no Rust required):
+
+Download the binary for your platform from the [Releases](https://github.com/unaimeds/monkeyfetch/releases) page, extract, and place it somewhere on your `$PATH`.
 
 **From crates.io:**
 
