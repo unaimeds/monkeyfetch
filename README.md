@@ -8,21 +8,23 @@ _Requires terminal with true color support._
 
 ![Output](screenshots/output.png)
 
-## Building
+## Installation
 
 Requires [Rust](https://rustup.rs).
+
+**From crates.io:**
+
+```sh
+cargo install monkeyfetch
+```
+
+**From source:**
 
 ```sh
 git clone https://github.com/unaimeds/monkeyfetch
 cd monkeyfetch
 cargo build --release
 ./target/release/monkeyfetch
-```
-
-Or run directly without installing:
-
-```sh
-cargo run
 ```
 
 ## Configuration
