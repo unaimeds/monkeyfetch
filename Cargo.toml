@@ -1,9 +1,12 @@
 [package]
-authors = ["unaimeds"]
 name = "monkeyfetch"
 version = "1.0.0"
 edition = "2024"
 repository = "https://github.com/unaimeds/monkeyfetch"
+license = "MIT"
+authors = ["unaimeds"]
+description = "a CLI tool to fetch your monkeytype stats and pretty-print them"
+keywords = ["monkeytype"]
 
 [dependencies]
 chrono = { version = "0.4.44", features = ["serde"] }

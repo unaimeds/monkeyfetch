@@ -25,6 +25,10 @@ struct Args {
     /// For example, in Linux that would be: ~/.config/monkeyfetch/config.toml
     #[arg(long)]
     config: Option<String>,
+
+    /// Bypass cache and fetch fresh data from the API
+    #[arg(long)]
+    force: bool,
 }
 
 fn main() {
@@ -44,7 +48,7 @@ fn run() -> AppResult<()> {
     cfg.validate()?;
 
     let cache = CacheManager::new();
-    let data = match cache.load()? {
+    let data = match if args.force { Ok(None) } else { cache.load() }? {
         Some(d) => d,
         None => {
             let api = Api::new(&cfg.api_key);
