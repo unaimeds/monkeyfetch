@@ -66,7 +66,7 @@ fn run() -> AppResult<()> {
         }
     };
 
-    print_user_data(data);
+    print_user_data(data, cfg.style);
 
     Ok(())
 }

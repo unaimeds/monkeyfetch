@@ -39,7 +39,16 @@ Create the config file at:
 
 ```toml
 api_key = "your_api_key_here"
+style = "default"  # optional: default | modern | minimal
 ```
+
+### Output styles
+
+| Value     | Description                                                        |
+| --------- | ------------------------------------------------------------------ |
+| `default` | Box-drawing table for personal bests, bullet list for recent tests |
+| `modern`  | Bar chart for recent tests, inline labels                          |
+| `minimal` | Plain aligned text, no borders or decorations                      |
 
 ### Getting your Monkeytype API key
 

@@ -6,37 +6,28 @@ use colored::Colorize;
 use crate::{
     cache::Cache,
     dto::{PersonalBest, TestResult, UserStats},
+    print::{ACCENT, BANNER_SEPARATOR, PB_COLUMNS, SUB},
 };
 
-// TODO: dynamic output size based on terminal's size
-
-const BANNER_SEPARATOR: &str = "·";
-const PB_COLUMNS: &[&str] = &["mode", "wpm", "raw", "acc", "cons"];
-
-// Monkeytype palette
-const SUB: (u8, u8, u8) = (100, 102, 105); // #646669
-const ACCENT: (u8, u8, u8) = (226, 183, 20); // #e2b714
-
-pub fn print_user_data(cache: Cache) {
+pub fn print_default(cache: Cache) {
     let (b_text, b_len) = banner(&cache.username, cache.user_stats);
     let (pb_lines, pb_len) = personal_bests(cache.personal_bests);
     let (rt_lines, rt_len) = recent_tests(&cache.recent_tests);
 
     let max_width = [b_len, pb_len, rt_len].into_iter().max().unwrap();
-    // must be divisible by PB_COLUMNS.len() (for column borders) and by 2 (for banner centering)
     let col_count = PB_COLUMNS.len();
     let round_to = if col_count.is_multiple_of(2) {
         col_count
     } else {
         col_count * 2
     };
-    let max_width = max_width.div_ceil(round_to);
+    let max_width = max_width.div_ceil(round_to) * round_to;
 
     print_banner(&b_text, max_width);
     println!();
     print_personal_bests(&pb_lines, max_width);
     println!();
-    print_recent_tests(&rt_lines, max_width);
+    print_recent_tests_default(&rt_lines, max_width);
 }
 
 fn banner(username: &str, stats: UserStats) -> (String, usize) {
@@ -58,7 +49,7 @@ fn print_banner(inner: &str, width: usize) {
     let (sr, sg, sb) = SUB;
     let (ar, ag, ab) = ACCENT;
 
-    let inner_width = width - 4; // padding of 2 whitespaces on each side
+    let inner_width = width - 4;
     let padding = inner_width - inner.chars().count();
     let left_pad = padding / 2;
     let right_pad = padding - left_pad;
@@ -239,7 +230,7 @@ fn recent_tests(tests: &[TestResult]) -> (Vec<(String, String)>, usize) {
     (lines, max_width)
 }
 
-fn print_recent_tests(tests: &[(String, String)], width: usize) {
+fn print_recent_tests_default(tests: &[(String, String)], width: usize) {
     let (sr, sg, sb) = SUB;
     let (ar, ag, ab) = ACCENT;
 

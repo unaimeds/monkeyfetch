@@ -8,11 +8,21 @@ use serde::Deserialize;
 
 use crate::error::{AppError, AppResult};
 
+#[derive(Debug, Deserialize, Default, Clone, Copy, PartialEq)]
+#[serde(rename_all = "lowercase")]
+pub enum OutputStyle {
+    #[default]
+    Default,
+    Modern,
+    Minimal,
+}
+
 #[derive(Debug, Deserialize)]
 #[serde(default)]
 pub struct Config {
     pub api_url: String,
     pub api_key: String,
+    pub style: OutputStyle,
 }
 
 impl Config {
@@ -45,6 +55,7 @@ impl Default for Config {
         Self {
             api_url: "https://api.monkeytype.com".into(),
             api_key: String::new(),
+            style: OutputStyle::Default,
         }
     }
 }
