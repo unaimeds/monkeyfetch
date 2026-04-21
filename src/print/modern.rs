@@ -53,7 +53,7 @@ pub fn print_modern(cache: Cache) {
             format!("{mode}s").truecolor(sr, sg, sb),
             best.wpm.round().to_string().truecolor(ar, ag, ab).bold(),
             "wpm".truecolor(sr, sg, sb),
-            best.raw.round().to_string(),
+            best.raw.round(),
             "raw".truecolor(sr, sg, sb),
             best.accuracy,
             "acc".truecolor(sr, sg, sb),
